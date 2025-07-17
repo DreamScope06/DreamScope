@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DreamScope</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0F0C29 0%, #24243e 50%, #2E1065 100%);
+            color: white;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Fond étoilé animé */
+        .stars-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(2px 2px at 20px 30px, white, transparent),
+                        radial-gradient(2px 2px at 40px 70px, white, transparent),
+                        radial-gradient(1px 1px at 90px 40px, white, transparent),
+                        radial-gradient(1px 1px at 130px 80px, white, transparent),
+                        radial-gradient(2px 2px at 160px 30px, white, transparent);
+            background-size: 200px 100px;
+            animation: sparkle 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes sparkle {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.8; }
+        }
+
+        /* Écrans */
+        .screen {
+            display: none;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Écran d'accueil */
+        .home-screen {
+            align-items: center;
+            justify-content: space-between;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #E6E6FA;
+            text-shadow: 0 0 20px rgba(230, 230, 250, 0.5);
+            margin-top: 80px;
+            letter-spacing: 2px;
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            color: #B8B8FF;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+
+        /* Navigation en nuages */
+        .cloud-nav {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 40px;
+            padding: 0 20px;
+        }
+
+        .cloud-btn {
+            background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 50px;
+            padding: 15px 20px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cloud-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255,255,255,0.1);
+            background: linear-gradient(145deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+        }
+
+        /* Écran Avatar */
+        .avatar-screen {
+            align-items: center;
+            padding-top: 40px;
+        }
+
+        .avatar-title {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            text-align: center;
+            color: #E6E6FA;
+        }
+
+        .avatar-preview {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #4A90E2, #7B68EE);
+            margin: 0 auto 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            border: 3px solid rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .avatar-options {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .option-group {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .option-label {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: #E6E6FA;
+        }
+
+        .option-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .option-btn {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 25px;
+            padding: 8px 16px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .option-btn.selected {
+            background: linear-gradient(145deg, #7B68EE, #4A90E2);
+            border-color: #7B68EE;
+            transform: scale(1.05);
+        }
+
+        /* Écran de création de rêve */
+        .dream-screen {
+            padding-top: 40px;
+            align-items: center;
+        }
+
+        .dream-title {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            text-align: center;
+            color: #E6E6FA;
+        }
+
+        .dream-input {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto 30px;
+            padding: 20px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 15px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 120px;
+            backdrop-filter: blur(10px);
+        }
+
+        .dream-input::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+
+        .generate-btn {
+            background: linear-gradient(145deg, #7B68EE, #4A90E2);
+            border: none;
+            border-radius: 25px;
+            padding: 15px 40px;
+            color: white;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(123, 104, 238, 0.3);
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(123, 104, 238, 0.5);
+        }
+
+        /* Animation de chargement */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0F0C29 0%, #24243e 50%, #2E1065 100%);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .moon-sun-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin-bottom: 30px;
+        }
+
+        .moon, .sun {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            transition: all 2s ease;
+        }
+
+        .moon {
+            background: linear-gradient(145deg, #C0C0C0, #A0A0A0);
+            opacity: 1;
+        }
+
+        .sun {
+            background: linear-gradient(145deg, #FFD700, #FFA500);
+            opacity: 0;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+        }
+
+        .loading-text {
+            font-size: 1.3rem;
+            color: #E6E6FA;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 200px;
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #7B68EE, #4A90E2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Résultat du rêve */
+        .dream-result {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .dream-video {
+            width: 100%;
+            max-width: 400px;
+            height: 250px;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #0F0C29 0%, #24243e 50%, #2E1065 100%);
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .video-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+        }
+
+        .video-element {
+            position: absolute;
+            transition: all 2s ease-in-out;
+        }
+
+        .video-controls {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 15px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .play-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .play-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .video-progress {
+            width: 100px;
+            height: 4px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .video-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #7B68EE, #4A90E2);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .video-time {
+            color: white;
+            font-size: 0.8rem;
+        }
+
+        /* Éléments visuels pour la vidéo */
+        .floating-star {
+            position: absolute;
+            color: white;
+            font-size: 1.5rem;
+            opacity: 0.8;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .floating-cloud {
+            position: absolute;
+            color: rgba(255,255,255,0.6);
+            font-size: 2rem;
+            animation: drift 6s linear infinite;
+        }
+
+        .floating-moon {
+            position: absolute;
+            color: #E6E6FA;
+            font-size: 3rem;
+            animation: glow 3s ease-in-out infinite alternate;
+        }
+
+        .floating-tree {
+            position: absolute;
+            color: #90EE90;
+            font-size: 2.5rem;
+            animation: sway 4s ease-in-out infinite;
+        }
+
+        .floating-water {
+            position: absolute;
+            color: #87CEEB;
+            font-size: 2rem;
+            animation: wave 2s ease-in-out infinite;
+        }
+
+        .floating-bird {
+            position: absolute;
+            color: #FFD700;
+            font-size: 1.8rem;
+            animation: fly 5s linear infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes drift {
+            0% { transform: translateX(-50px); }
+            100% { transform: translateX(450px); }
+        }
+
+        @keyframes glow {
+            0% { filter: brightness(1); }
+            100% { filter: brightness(1.3); }
+        }
+
+        @keyframes sway {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+
+        @keyframes wave {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(1.1); }
+        }
+
+        @keyframes fly {
+            0% { transform: translateX(-30px) translateY(0px); }
+            25% { transform: translateX(100px) translateY(-10px); }
+            50% { transform: translateX(250px) translateY(5px); }
+            75% { transform: translateX(350px) translateY(-15px); }
+            100% { transform: translateX(450px) translateY(0px); }
+        }
+
+        .dream-interpretation {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .interpretation-title {
+            font-size: 1.3rem;
+            color: #E6E6FA;
+            margin-bottom: 15px;
+        }
+
+        .interpretation-text {
+            color: #B8B8FF;
+            line-height: 1.6;
+        }
+
+        /* Écran abonnements */
+        .subscription-screen {
+            padding-top: 40px;
+            align-items: center;
+        }
+
+        .subscription-title {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #E6E6FA;
+        }
+
+        .subscription-visual {
+            width: 100%;
+            max-width: 300px;
+            height: 200px;
+            border-radius: 15px;
+            background: linear-gradient(145deg, #2E1065, #0F0C29);
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .subscription-visual::before {
+            content: '🏠';
+            position: absolute;
+            font-size: 4rem;
+            opacity: 0.3;
+        }
+
+        .subscription-visual::after {
+            content: '🌙';
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2rem;
+        }
+
+        .subscription-options {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .subscription-card {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .subscription-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255,255,255,0.1);
+        }
+
+        .subscription-card.premium {
+            border-color: #7B68EE;
+            background: linear-gradient(145deg, rgba(123, 104, 238, 0.2), rgba(74, 144, 226, 0.1));
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            color: #E6E6FA;
+            margin-bottom: 10px;
+        }
+
+        .card-features {
+            color: #B8B8FF;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+        .card-price {
+            font-size: 1.5rem;
+            color: #7B68EE;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .card-btn {
+            background: linear-gradient(145deg, #7B68EE, #4A90E2);
+            border: none;
+            border-radius: 20px;
+            padding: 10px 30px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .card-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(123, 104, 238, 0.3);
+        }
+
+        .card-btn.free {
+            background: linear-gradient(145deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+        }
+
+        /* Bouton retour */
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .back-btn:hover {
+            transform: scale(1.1);
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 2rem;
+            }
+
+            .cloud-nav {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .cloud-btn {
+                width: 100%;
+                max-width: 250px;
+                justify-content: center;
+            }
+
+            .subscription-options {
+                padding: 0 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars-bg"></div>
+
+    <!-- Écran d'accueil -->
+    <div class="screen active" id="homeScreen">
+        <div class="home-screen">
+            <div>
+                <div class="logo">DreamScope</div>
+                <div class="tagline">Explorez vos rêves avec l'IA</div>
+            </div>
+            
+            <div class="cloud-nav">
+                <a href="#" class="cloud-btn" onclick="showScreen('avatarScreen')">
+                    👤 Avatar
+                </a>
+                <a href="#" class="cloud-btn" onclick="showScreen('dreamScreen')">
+                    🛠️ Créer un rêve
+                </a>
+                <a href="#" class="cloud-btn" onclick="showScreen('subscriptionScreen')">
+                    ⚡ Abonnements
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Écran Avatar -->
+    <div class="screen" id="avatarScreen">
+        <div class="back-btn" onclick="showScreen('homeScreen')">←</div>
+        <div class="avatar-screen">
+            <div class="avatar-title">Personnalisation</div>
+            
+            <div class="avatar-preview" id="avatarPreview">👤</div>
+            
+            <div class="avatar-options">
+                <div class="option-group">
+                    <div class="option-label">Genre</div>
+                    <div class="option-buttons">
+                        <button class="option-btn selected" onclick="selectOption('gender', 'male')">Homme</button>
+                        <button class="option-btn" onclick="selectOption('gender', 'female')">Femme</button>
+                    </div>
+                </div>
+                
+                <div class="option-group">
+                    <div class="option-label">Coiffure</div>
+                    <div class="option-buttons">
+                        <button class="option-btn selected" onclick="selectOption('hair', 'short')">Courte</button>
+                        <button class="option-btn" onclick="selectOption('hair', 'medium')">Moyenne</button>
+                        <button class="option-btn" onclick="selectOption('hair', 'long')">Longue</button>
+                    </div>
+                </div>
+                
+                <div class="option-group">
+                    <div class="option-label">Teint</div>
+                    <div class="option-buttons">
+                        <button class="option-btn selected" onclick="selectOption('skin', 'light')">Clair</button>
+                        <button class="option-btn" onclick="selectOption('skin', 'medium')">Moyen</button>
+                        <button class="option-btn" onclick="selectOption('skin', 'dark')">Foncé</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Écran de création de rêve -->
+    <div class="screen" id="dreamScreen">
+        <div class="back-btn" onclick="showScreen('homeScreen')">←</div>
+        <div class="dream-screen">
+            <div class="dream-title">Décrivez votre rêve</div>
+            
+            <textarea class="dream-input" id="dreamInput" placeholder="Racontez-nous votre rêve en détail... Par exemple : 'J'étais dans une forêt enchantée avec des arbres lumineux et je volais au-dessus d'un lac cristallin...'"></textarea>
+            
+            <button class="generate-btn" onclick="generateDream()">Générer mon rêve</button>
+            
+            <div class="dream-result" id="dreamResult">
+                <div class="dream-video" id="dreamVideo">
+                    <div class="video-canvas" id="videoCanvas"></div>
+                    <div class="video-controls">
+                        <button class="play-btn" id="playBtn" onclick="toggleVideo()">▶️</button>
+                        <div class="video-progress">
+                            <div class="video-progress-fill" id="videoProgressFill"></div>
+                        </div>
+                        <div class="video-time" id="videoTime">0:00 / 0:08</div>
+                    </div>
+                </div>
+                <div class="dream-interpretation">
+                    <div class="interpretation-title">Interprétation</div>
+                    <div class="interpretation-text" id="interpretationText"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Écran abonnements -->
+    <div class="screen" id="subscriptionScreen">
+        <div class="back-btn" onclick="showScreen('homeScreen')">←</div>
+        <div class="subscription-screen">
+            <div class="subscription-title">Abonnements</div>
+            
+            <div class="subscription-visual"></div>
+            
+            <div class="subscription-options">
+                <div class="subscription-card">
+                    <div class="card-title">FreeDream</div>
+                    <div class="card-features">2 rêves/mois<br>Pas d'avatar</div>
+                    <div class="card-price">Gratuit</div>
+                    <button class="card-btn free">Gratuit</button>
+                </div>
+                
+                <div class="subscription-card">
+                    <div class="card-title">DreamStart</div>
+                    <div class="card-features">2 rêves/semaine<br>Avatar personnalisé</div>
+                    <div class="card-price">2,99 €/mois</div>
+                    <button class="card-btn">Souscrire</button>
+                </div>
+                
+                <div class="subscription-card premium">
+                    <div class="card-title">DreamCreator</div>
+                    <div class="card-features">Rêves illimités<br>Photo-avatar</div>
+                    <div class="card-price">5,99 €/mois</div>
+                    <button class="card-btn">Souscrire</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay de chargement -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="moon-sun-container">
+            <div class="moon" id="moon"></div>
+            <div class="sun" id="sun"></div>
+        </div>
+        <div class="loading-text">Création de votre rêve en cours...</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentAvatar = {
+            gender: 'male',
+            hair: 'short',
+            skin: 'light'
+        };
+
+        let videoPlaying = false;
+        let videoElements = [];
+        let videoInterval;
+        let videoDuration = 8000; // 8 secondes
+        let videoCurrentTime = 0;
+
+        // Navigation entre écrans
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // Sélection d'options avatar
+        function selectOption(category, value) {
+            // Retirer la sélection précédente
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                if (btn.onclick && btn.onclick.toString().includes(category)) {
+                    btn.classList.remove('selected');
+                }
+            });
+
+            // Ajouter la sélection actuelle
+            event.target.classList.add('selected');
+            
+            // Mettre à jour l'avatar
+            currentAvatar[category] = value;
+            updateAvatarPreview();
+        }
+
+        // Mise à jour de l'aperçu avatar
+        function updateAvatarPreview() {
+            const preview = document.getElementById('avatarPreview');
+            let emoji = '👤';
+            
+            if (currentAvatar.gender === 'male') {
+                if (currentAvatar.skin === 'light') emoji = '👨🏻';
+                else if (currentAvatar.skin === 'medium') emoji = '👨🏽';
+                else emoji = '👨🏿';
+            } else {
+                if (currentAvatar.skin === 'light') emoji = '👩🏻';
+                else if (currentAvatar.skin === 'medium') emoji = '👩🏽';
+                else emoji = '👩🏿';
+            }
+            
+            preview.textContent = emoji;
+            preview.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                preview.style.transform = 'scale(1)';
+            }, 200);
+        }
+
+        // Génération du rêve
+        function generateDream() {
+            const dreamText = document.getElementById('dreamInput').value.trim();
+            
+            if (!dreamText) {
+                alert('Veuillez décrire votre rêve d\'abord !');
+                return;
+            }
+
+            // Afficher l'overlay de chargement
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            
+            // Animation lune vers soleil
+            setTimeout(() => {
+                document.getElementById('moon').style.opacity = '0';
+                document.getElementById('sun').style.opacity = '1';
+            }, 1000);
+
+            // Animation de la barre de progression
+            const progressFill = document.getElementById('progressFill');
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 100) progress = 100;
+                progressFill.style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(progressInterval);
+                    
+                    // Masquer l'overlay et afficher le résultat
+                    setTimeout(() => {
+                        document.getElementById('loadingOverlay').style.display = 'none';
+                        showDreamResult(dreamText);
+                        
+                        // Réinitialiser pour la prochaine fois
+                        document.getElementById('moon').style.opacity = '1';
+                        document.getElementById('sun').style.opacity = '0';
+                        progressFill.style.width = '0%';
+                    }, 500);
+                }
+            }, 200);
+        }
+
+        // Affichage du résultat
+        function showDreamResult(dreamText) {
+            const result = document.getElementById('dreamResult');
+            const interpretationText = document.getElementById('interpretationText');
+            
+            // Génération d'une interprétation simple basée sur des mots-clés
+            let interpretation = generateInterpretation(dreamText);
+            
+            interpretationText.textContent = interpretation;
+            result.style.display = 'flex';
+            
+            // Générer la vidéo basée sur le texte
+            generateVideoFromText(dreamText);
+            
+            // Scroll vers le résultat
+            result.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Génération de vidéo basée sur le texte
+        function generateVideoFromText(dreamText) {
+            const canvas = document.getElementById('videoCanvas');
+            const lowerText = dreamText.toLowerCase();
+            
+            // Nettoyer le canvas
+            canvas.innerHTML = '';
+            videoElements = [];
+            
+            // Analyser le texte et créer des éléments visuels
+            const visualElements = [];
+            
+            // Détection de mots-clés et ajout d'éléments correspondants
+            if (lowerText.includes('étoile') || lowerText.includes('ciel') || lowerText.includes('nuit')) {
+                visualElements.push({ type: 'star', emoji: '⭐', count: 5 });
+            }
+            
+            if (lowerText.includes('nuage') || lowerText.includes('blanc')) {
+                visualElements.push({ type: 'cloud', emoji: '☁️', count: 3 });
+            }
+            
+            if (lowerText.includes('lune') || lowerText.includes('nuit')) {
+                visualElements.push({ type: 'moon', emoji: '🌙', count: 1 });
+            }
+            
+            if (lowerText.includes('arbre') || lowerText.includes('forêt') || lowerText.includes('nature')) {
+                visualElements.push({ type: 'tree', emoji: '🌳', count: 4 });
+            }
+            
+            if (lowerText.includes('eau') || lowerText.includes('lac') || lowerText.includes('mer') || lowerText.includes('rivière')) {
+                visualElements.push({ type: 'water', emoji: '💧', count: 6 });
+            }
+            
+            if (lowerText.includes('oiseau') || lowerText.includes('voler') || lowerText.includes('vol')) {
+                visualElements.push({ type: 'bird', emoji: '🦅', count: 2 });
+            }
+            
+            if (lowerText.includes('fleur') || lowerText.includes('jardin')) {
+                visualElements.push({ type: 'flower', emoji: '🌸', count: 4 });
+            }
+            
+            if (lowerText.includes('soleil') || lowerText.includes('jour') || lowerText.includes('lumière')) {
+                visualElements.push({ type: 'sun', emoji: '☀️', count: 1 });
+            }
+            
+            // Si aucun élément spécifique n'est trouvé, ajouter des éléments par défaut
+            if (visualElements.length === 0) {
+                visualElements.push(
+                    { type: 'star', emoji: '⭐', count: 3 },
+                    { type: 'cloud', emoji: '☁️', count: 2 },
+                    { type: 'moon', emoji: '🌙', count: 1 }
+                );
+            }
+            
+            // Créer les éléments visuels
+            visualElements.forEach(element => {
+                for (let i = 0; i < element.count; i++) {
+                    createVideoElement(element.type, element.emoji, canvas);
+                }
+            });
+            
+            // Réinitialiser les contrôles vidéo
+            document.getElementById('playBtn').textContent = '▶️';
+            document.getElementById('videoProgressFill').style.width = '0%';
+            document.getElementById('videoTime').textContent = '0:00 / 0:08';
+            videoPlaying = false;
+            videoCurrentTime = 0;
+        }
+
+        // Créer un élément visuel pour la vidéo
+        function createVideoElement(type, emoji, container) {
+            const element = document.createElement('div');
+            element.className = `video-element floating-${type}`;
+            element.textContent = emoji;
+            
+            // Position aléatoire
+            const x = Math.random() * 350;
+            const y = Math.random() * 200;
+            element.style.left = x + 'px';
+            element.style.top = y + 'px';
+            
+            // Délai d'apparition aléatoire
+            const delay = Math.random() * 2;
+            element.style.animationDelay = delay + 's';
+            
+            container.appendChild(element);
+            videoElements.push(element);
+        }
+
+        // Contrôles vidéo
+        function toggleVideo() {
+            const playBtn = document.getElementById('playBtn');
+            const progressFill = document.getElementById('videoProgressFill');
+            const timeDisplay = document.getElementById('videoTime');
+            
+            if (!videoPlaying) {
+                // Démarrer la vidéo
+                videoPlaying = true;
+                playBtn.textContent = '⏸️';
+                
+                // Animer la barre de progression
+                videoInterval = setInterval(() => {
+                    videoCurrentTime += 100;
+                    const progress = (videoCurrentTime / videoDuration) * 100;
+                    progressFill.style.width = progress + '%';
+                    
+                    const currentSeconds = Math.floor(videoCurrentTime / 1000);
+                    const totalSeconds = Math.floor(videoDuration / 1000);
+                    timeDisplay.textContent = `0:${currentSeconds.toString().padStart(2, '0')} / 0:${totalSeconds.toString().padStart(2, '0')}`;
+                    
+                    if (videoCurrentTime >= videoDuration) {
+                        // Fin de la vidéo
+                        clearInterval(videoInterval);
+                        videoPlaying = false;
+                        playBtn.textContent = '▶️';
+                        videoCurrentTime = 0;
+                        progressFill.style.width = '0%';
+                        timeDisplay.textContent = '0:00 / 0:08';
+                    }
+                }, 100);
+                
+                // Ajouter des effets dynamiques pendant la lecture
+                addDynamicEffects();
+                
+            } else {
+                // Pause de la vidéo
+                videoPlaying = false;
+                playBtn.textContent = '▶️';
+                clearInterval(videoInterval);
+            }
+        }
+
+        // Ajouter des effets dynamiques pendant la lecture
+        function addDynamicEffects() {
+            const canvas = document.getElementById('videoCanvas');
+            
+            // Changer les couleurs de fond progressivement
+            const colors = [
+                'linear-gradient(135deg, #0F0C29 0%, #24243e 50%, #2E1065 100%)',
+                'linear-gradient(135deg, #2E1065 0%, #0F0C29 50%, #24243e 100%)',
+                'linear-gradient(135deg, #24243e 0%, #2E1065 50%, #0F0C29 100%)'
+            ];
+            
+            let colorIndex = 0;
+            const colorInterval = setInterval(() => {
+                if (!videoPlaying) {
+                    clearInterval(colorInterval);
+                    return;
+                }
+                
+                document.getElementById('dreamVideo').style.background = colors[colorIndex];
+                colorIndex = (colorIndex + 1) % colors.length;
+            }, 2000);
+            
+            // Ajouter des éléments temporaires pendant la lecture
+            const tempElements = [];
+            const effectInterval = setInterval(() => {
+                if (!videoPlaying) {
+                    clearInterval(effectInterval);
+                    // Nettoyer les éléments temporaires
+                    tempElements.forEach(el => el.remove());
+                    return;
+                }
+                
+                // Ajouter une étoile scintillante temporaire
+                const star = document.createElement('div');
+                star.textContent = '✨';
+                star.style.position = 'absolute';
+                star.style.left = Math.random() * 350 + 'px';
+                star.style.top = Math.random() * 200 + 'px';
+                star.style.fontSize = '1.5rem';
+                star.style.opacity = '0';
+                star.style.transition = 'opacity 0.5s ease';
+                
+                canvas.appendChild(star);
+                tempElements.push(star);
+                
+                // Faire apparaître puis disparaître
+                setTimeout(() => star.style.opacity = '1', 100);
+                setTimeout(() => {
+                    star.style.opacity = '0';
+                    setTimeout(() => star.remove(), 500);
+                }, 1500);
+                
+            }, 800);
+        }
+
+        // Génération d'interprétation basique
+        function generateInterpretation(dreamText) {
+            const interpretations = {
+                'voler': 'Le vol dans les rêves symbolise souvent le désir de liberté et d\'élévation spirituelle.',
+                'eau': 'L\'eau représente les émotions et l\'inconscient. Elle peut indiquer une période de transformation.',
+                'forêt': 'La forêt symbolise l\'inconscient et les mystères de la vie. Elle peut représenter une quête intérieure.',
+                'animal': 'Les animaux dans les rêves représentent souvent nos instincts et notre nature primitive.',
+                'maison': 'La maison symbolise le moi intérieur et la sécurité. Elle peut représenter votre état psychologique.',
+                'lumière': 'La lumière dans les rêves représente la connaissance, l\'illumination et l\'espoir.',
+                'course': 'Courir peut symboliser la fuite d\'une situation ou la poursuite d\'un objectif.',
+                'chute': 'La chute représente souvent l\'anxiété, la perte de contrôle ou les peurs profondes.'
+            };
+
+            let foundInterpretation = '';
+            const lowerText = dreamText.toLowerCase();
+            
+            for (const [keyword, meaning] of Object.entries(interpretations)) {
+                if (lowerText.includes(keyword)) {
+                    foundInterpretation = meaning;
+                    break;
+                }
+            }
+
+            if (!foundInterpretation) {
+                foundInterpretation = 'Votre rêve semble riche en symbolisme. Il peut représenter votre état d\'esprit actuel et vos aspirations profondes. Les rêves sont souvent le reflet de nos préoccupations et de nos désirs cachés.';
+            }
+
+            return foundInterpretation;
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            updateAvatarPreview();
+        });
+    </script>
+</body>
+</html>

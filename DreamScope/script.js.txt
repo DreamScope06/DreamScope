@@ -1,0 +1,59 @@
+const API_KEY = "key_e10511be80438832c175e48d5a106784032a4eae8de4e3b4a90cacb186a13719f66a085fdd5472f882f8bab9ff05db0799bcb338b13439f1c8a633d46d6f7e99";
+const generateBtn = document.getElementById("generateBtn");
+const statusDiv    = document.getElementById("status");
+const videoPlayer  = document.getElementById("dreamVideo");
+
+generateBtn.addEventListener("click", () => {
+  const prompt = document.getElementById("dreamText").value.trim();
+  if (!prompt) {
+    statusDiv.textContent = "Veuillez décrire votre rêve.";
+    return;
+  }
+  statusDiv.textContent = "Génération en cours…";
+  videoPlayer.src = "";
+  createVideoFromDream(prompt);
+});
+
+async function createVideoFromDream(prompt) {
+  try {
+    // 1. Générer l’image
+    let res = await fetch("https://api.runwayml.com/v1/generate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "stable-diffusion",
+        prompt
+      })
+    });
+    let json = await res.json();
+    const assetId = json.outputs[0].id;
+
+    statusDiv.textContent = "Animation en cours…";
+
+    // 2. Animer l’image
+    res = await fetch("https://api.runwayml.com/v1/animate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${API_KEY}`
+      },
+      body: JSON.stringify({
+        asset: assetId,
+        duration: 5,
+        style: "smooth"
+      })
+    });
+    json = await res.json();
+    const videoUrl = json.outputs[0].url;
+
+    // 3. Afficher la vidéo
+    videoPlayer.src = videoUrl;
+    statusDiv.textContent = "C’est prêt !";
+  } catch (err) {
+    console.error(err);
+    statusDiv.textContent = "Une erreur est survenue.";
+  }
+}
